@@ -7,6 +7,12 @@ app = FastAPI()
 # main endpoint for this API
 my_name = "Sergei"
 
+hotel_rooms = {
+    1: {"number": "101", "size": "1 person"},
+    2: {"number": "102", "size": "2 persons"},
+    3: {"number": "103", "size": "3 persons"},
+}
+
 origins = [
     "http://127.0.0.1:5500",
     "https://gg-team-repo-git-web-communication-and-databases-1.2.rahtiapp.fi",
@@ -21,7 +27,9 @@ app.add_middleware(
 )
 
 
-
+@app.get("/api/rooms")
+def get_rooms():
+    return hotel_rooms
 
 @app.get("/api/ip", response_class=HTMLResponse)
 def read_root(request: Request):

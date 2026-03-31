@@ -1,0 +1,3 @@
+@api-url = https://gg-team-repo-git-web-communication-and-databases-1.2.rahtiapp.fi/api/ip
+
+GET {{api-url}}

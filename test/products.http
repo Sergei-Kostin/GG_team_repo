@@ -1,0 +1,11 @@
+@api-url = https://fw-teaching.fi/demo/wdbocms/api/v1/products/
+
+GET {{api-url}}
+
+POST {{api-url}}
+Content-Type: application/json
+
+{
+  "name": "Jeans",
+  "price": 19
+}
