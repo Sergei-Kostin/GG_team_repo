@@ -26,7 +26,7 @@ app.add_middleware(
 @app.get("/api/ip", response_class=HTMLResponse)
 def read_root(request: Request):
     my_IP = request.client.host
-    return f"<h1>Hello, your ip is {my_IP}</h1>"
+    return f"{my_IP}"
 
 @app.get("/")
 def read_root():
