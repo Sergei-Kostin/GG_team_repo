@@ -1,16 +1,17 @@
 from fastapi import FastAPI, Request
 from fastapi.responses import HTMLResponse
 from fastapi.middleware.cors import CORSMiddleware
-
+from app.db import get_conn
+from app.db import create_schema
 app = FastAPI()
 
 # main endpoint for this API
 my_name = "Sergei"
 
 hotel_rooms = [
-    { "number": "101", "size": "1 person", "price": 100 },
-    { "number": "102", "size": "2 persons", "price": 150 },
-    { "number": "103", "size": "3 persons", "price": 200 },
+    { "room_number": "101", "room_type": "1 person", "price": 100 },
+    { "room_number": "102", "room_type": "2 persons", "price": 150 },
+    { "room_number": "103", "room_type": "3 persons", "price": 200 },
 ]
 
 origins = [
@@ -26,6 +27,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+create_schema()
 
 @app.get("/api/rooms")
 def get_rooms():
@@ -42,6 +44,9 @@ def read_root(request: Request):
 
 @app.get("/")
 def read_root():
-    return {"msg": f"Hello, {my_name}"}
+    with get_conn() as conn, conn.cursor() as cur:
+        cur.execute("SELECT version()")
+        result = cur.fetchone()
+        return {"db_status":result}
 
 
