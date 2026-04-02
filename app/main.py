@@ -7,11 +7,11 @@ app = FastAPI()
 # main endpoint for this API
 my_name = "Sergei"
 
-hotel_rooms = {
-    1: {"number": "101", "size": "1 person"},
-    2: {"number": "102", "size": "2 persons"},
-    3: {"number": "103", "size": "3 persons"},
-}
+hotel_rooms = [
+    { "number": "101", "size": "1 person", "price": 100 },
+    { "number": "102", "size": "2 persons", "price": 150 },
+    { "number": "103", "size": "3 persons", "price": 200 },
+]
 
 origins = [
     "http://127.0.0.1:5500",
