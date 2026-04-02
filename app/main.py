@@ -31,6 +31,10 @@ app.add_middleware(
 def get_rooms():
     return hotel_rooms
 
+@app.post("/api/booking")
+def create_booking():
+    return {"msg": "Booking created"}
+
 @app.get("/api/ip", response_class=HTMLResponse)
 def read_root(request: Request):
     my_IP = request.client.host
