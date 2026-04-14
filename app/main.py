@@ -31,7 +31,10 @@ create_schema()
 
 @app.get("/api/rooms")
 def get_rooms():
-    return hotel_rooms
+    with get_conn() as conn, conn.cursor() as cur:
+        cur.execute("SELECT * FROM hotel_rooms")
+        rows = cur.fetchall()
+        return {"hotel_rooms": rows}
 
 @app.post("/api/booking")
 def create_booking():
@@ -48,5 +51,17 @@ def read_root():
         cur.execute("SELECT version()")
         result = cur.fetchone()
         return {"db_status":result}
+    
 
+@app.get("/if/{term}")
+def if_test(term: str):
+    msg = "default msg"
+    if term == "hello" or term == "hi":
+        msg = "Hello yourself!"
 
+    elif term == "Hej" or term == "Moi":
+        msg = "Hej pa dig!"
+    else:
+        msg = "I don't understand you"
+        
+    return {"msg": msg}
