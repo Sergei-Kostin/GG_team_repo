@@ -1,3 +1,12 @@
-@api-url = http://127.0.0.1:8080/api/rooms
+@api-url = http://127.0.0.1:8080/api
 
-GET {{api-url}}
+
+POST {{api-url}}/booking
+Content-Type: application/json
+
+{
+  "guest_id": 1,
+  "room_id": 1,
+  "datefrom": "2023-10-01",
+  "dateto": "2023-10-10"
+}
