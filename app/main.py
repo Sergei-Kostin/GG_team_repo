@@ -38,7 +38,27 @@ class Booking(BaseModel):
     room_id: int
     datefrom: Optional[date] = None
     dateto: Optional[date] = None
+    info: Optional[str] = None
     addinfo: Optional[str] = None
+
+
+@app.get("/api/guests")
+def get_guests():
+    with get_conn() as conn, conn.cursor() as cur:
+        cur.execute("""
+            SELECT
+                g.*,
+                (
+                    SELECT count(*)
+                    FROM hotel_bookings b
+                    WHERE b.guest_id = g.id
+                    AND b.dateto < now()
+                ) AS previous_visits
+            FROM hotel_guests g
+            ORDER BY g.lastname, g.firstname
+        """)
+        rows = cur.fetchall()
+        return {"hotel_guests": rows}
 
 
 @app.get("/api/rooms")
@@ -48,6 +68,7 @@ def get_rooms():
         rows = cur.fetchall()
         return {"hotel_rooms": rows}
 
+@app.get("/api/rooms/{id}")
 @app.get("/api/rooms/id/{id}")
 def get_room_by_id(id: int):
     with get_conn() as conn, conn.cursor() as cur:
@@ -55,6 +76,7 @@ def get_room_by_id(id: int):
         row = cur.fetchone()
         return {"hotel_room": row}
 
+@app.post("/api/bookings")
 @app.post("/api/booking")
 def create_booking(booking: Booking):
     with get_conn() as conn, conn.cursor() as cur:
@@ -64,7 +86,13 @@ def create_booking(booking: Booking):
                     VALUES (%s, %s, COALESCE(%s, now()), COALESCE(%s, now()), %s)
                     RETURNING id
                     """, 
-                    (booking.guest_id, booking.room_id, booking.datefrom, booking.dateto, booking.addinfo)
+                    (
+                        booking.guest_id,
+                        booking.room_id,
+                        booking.datefrom,
+                        booking.dateto,
+                        booking.addinfo if booking.addinfo is not None else booking.info,
+                    )
                     )
         new_booking_id = cur.fetchone()["id"]
         conn.commit()
@@ -76,7 +104,29 @@ def create_booking(booking: Booking):
 @app.get("/api/bookings")
 def get_bookings():
     with get_conn() as conn, conn.cursor() as cur:
-        cur.execute("SELECT * FROM hotel_bookings")
+        cur.execute("""
+            SELECT
+                r.room_number,
+                r.room_type,
+                g.firstname || ' ' || g.lastname AS guest_name,
+                b.dateto::date - b.datefrom::date AS nights,
+                r.price AS price_per_night,
+                (b.dateto::date - b.datefrom::date) * r.price AS gross_price,
+                CASE
+                    WHEN b.dateto::date - b.datefrom::date >= 7 THEN
+                        (b.dateto::date - b.datefrom::date) * r.price * 0.8
+                    ELSE
+                        (b.dateto::date - b.datefrom::date) * r.price
+                END AS total_price,
+                COALESCE(b.addinfo, '') AS info,
+                b.*
+            FROM hotel_bookings b
+            INNER JOIN hotel_rooms r
+                ON r.id = b.room_id
+            INNER JOIN hotel_guests g
+                ON g.id = b.guest_id
+            ORDER BY b.id DESC
+        """)
         rows = cur.fetchall()
         return {"hotel_bookings": rows}
 
