@@ -3,38 +3,59 @@ import os, psycopg
 DATABASE_URL = os.getenv("DATABASE_URL")
 
 def get_conn():
+    if not DATABASE_URL:
+        raise RuntimeError("DATABASE_URL environment variable is not set")
     return psycopg.connect(DATABASE_URL, autocommit=True, row_factory=psycopg.rows.dict_row)
 
 def create_schema():
     with get_conn() as conn, conn.cursor() as cur:
+        # Create the schema
         cur.execute("""
+            -- Add pgcrypto
+            CREATE EXTENSION IF NOT EXISTS pgcrypto;
+                    
+            ----------
+            -- ROOMS
+            ----------
             CREATE TABLE IF NOT EXISTS hotel_rooms (
                 id SERIAL PRIMARY KEY,
-                room_number int NOT NULL,
+                room_number INT NOT NULL,
+                room_type VARCHAR,
+                price NUMERIC NOT NULL DEFAULT 0,
                 created_at TIMESTAMP DEFAULT now()
             );
-            ALTER TABLE hotel_rooms ADD COLUMN IF NOT EXISTS room_type VARCHAR(50);
-            ALTER TABLE hotel_rooms ADD COLUMN IF NOT EXISTS price numeric(10, 2) NOT NULL DEFAULT 0;
 
+            ----------
+            -- Guests
+            ----------
             CREATE TABLE IF NOT EXISTS hotel_guests (
                 id SERIAL PRIMARY KEY,
-                firstname VARCHAR(100) NOT NULL,
-                lastname VARCHAR(100) NOT NULL,
+                firstname VARCHAR NOT NULL,
+                lastname VARCHAR NOT NULL,
+                address VARCHAR,
+                api_key VARCHAR DEFAULT encode(gen_random_bytes(32), 'hex'),
                 created_at TIMESTAMP DEFAULT now()
             );
-            ALTER TABLE hotel_guests ADD COLUMN IF NOT EXISTS address VARCHAR(255);
 
+            ----------
+            -- Bookings
+            ----------
             CREATE TABLE IF NOT EXISTS hotel_bookings (
                 id SERIAL PRIMARY KEY,
-                guest_id INT REFERENCES hotel_guests(id),
-                room_id INT REFERENCES hotel_rooms(id),
+                guest_id INT NOT NULL REFERENCES hotel_guests(id),
+                room_id INT NOT NULL REFERENCES hotel_rooms(id),
+                datefrom DATE NOT NULL DEFAULT now(),
+                dateto DATE NOT NULL DEFAULT now()::date+1,
+                info VARCHAR,
+                stars INT CHECK (stars >= 1 AND stars <= 5),
                 created_at TIMESTAMP DEFAULT now()
             );
-            ALTER TABLE hotel_bookings ADD COLUMN IF NOT EXISTS datefrom TIMESTAMP NOT NULL DEFAULT now();
-            ALTER TABLE hotel_bookings ADD COLUMN IF NOT EXISTS dateto TIMESTAMP NOT NULL DEFAULT now() + interval '1 day';
-            ALTER TABLE hotel_bookings ADD COLUMN IF NOT EXISTS addinfo VARCHAR(255);
-            ALTER TABLE hotel_bookings ALTER COLUMN datefrom SET DEFAULT now();
-            ALTER TABLE hotel_bookings ALTER COLUMN dateto SET DEFAULT now() + interval '1 day';
+            
+            -- Add stars column if it doesn't exist
+            ALTER TABLE hotel_bookings
+            ADD COLUMN IF NOT EXISTS stars INT CHECK (stars >= 1 AND stars <= 5);
         """)
 
-
+if __name__ == "__main__":
+    create_schema()
+    print("Schema created successfully")

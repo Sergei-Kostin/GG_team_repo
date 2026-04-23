@@ -1,12 +1,34 @@
-@api-url = http://127.0.0.1:8080/api
+@apiUrl = http://127.0.0.1:8080
 
+GET {{apiUrl}}
 
-POST {{api-url}}/booking
+### List rooms
+GET {{apiUrl}}/rooms
+
+### Get one room
+GET {{apiUrl}}/rooms/1
+
+### List bookings (requires X-API-Key header)
+GET {{apiUrl}}/bookings
+X-API-Key: <paste-api-key-from-db>
+
+### Create booking (requires X-API-Key header)
+POST {{apiUrl}}/bookings
 Content-Type: application/json
+X-API-Key: <paste-api-key-from-db>
 
 {
-  "guest_id": 1,
-  "room_id": 1,
-  "datefrom": "2023-10-01",
-  "dateto": "2023-10-10"
+    "room_id": 1,
+    "datefrom": "2026-05-01",
+    "dateto": "2026-05-05",
+    "info": "Test booking"
+}
+
+### Submit review for booking (requires X-API-Key header)
+PUT {{apiUrl}}/bookings/10
+Content-Type: application/json
+X-API-Key: a55fb52c3c91f1dacdcf07b1ad661dff
+
+{
+    "stars": 5
 }

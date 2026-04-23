@@ -2,17 +2,16 @@
 services:
   postgres:
     image: postgres:17
-    container_name: postgres-fastapi
+    container_name: postgres-fastapi-en
     environment:
       POSTGRES_DB: devdb
       POSTGRES_USER: devuser
       POSTGRES_PASSWORD: devpassword
+      #DATABASE_URL=postgresql://devuser:devpassword@postgres:5432/devdb
     ports:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
-
-      #DB-url DATABASE_URL=postgresql://devuser:devpassword@postgres:5432/devdb
 
   fastapi-app:
     build:

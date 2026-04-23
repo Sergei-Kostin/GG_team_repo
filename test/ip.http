@@ -1,3 +1,8 @@
-@api-url = https://gg-team-repo-git-web-communication-and-databases-1.2.rahtiapp.fi/api/ip
 
-GET {{api-url}}
+@apiUrl = https://wdb26-english-examples-deployment-testing.2.rahtiapp.fi
+
+GET {{apiUrl}}/api/ip
+
+### 
+
+GET {{apiUrl}}
